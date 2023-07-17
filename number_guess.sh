@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 echo "Enter your username:"
 read USERNAME
 
@@ -10,8 +9,8 @@ DB_USER=$($PSQL "select * from users where username = '$USERNAME'")
 
 if [[ -z $DB_USER ]]
 then
-  INSERT_NEW_USER=$($PSQL "insert into users(username, games_played) values('$USERNAME', 0)")
   echo "Welcome, $USERNAME! It looks like this is your first time here."
+  INSERT_NEW_USER=$($PSQL "insert into users(username, games_played) values('$USERNAME', 0)")
 else
   echo $DB_USER | while IFS="|" read USERID USERNAME GAMES_PLAYED BEST_GAME
   do
@@ -25,6 +24,7 @@ echo "Guess the secret number between 1 and 1000:"
 read GUESS
 
 GUESS_SECRET_NUMBER () {
+  echo $SECRET_NUMBER
   if [[ ! $1 =~ ^[0-9]+$ ]]
     then 
     echo "That is not an integer, guess again:"
@@ -44,14 +44,16 @@ GUESS_SECRET_NUMBER () {
     read GUESS
     GUESS_SECRET_NUMBER $GUESS
   else
-    echo "You guessed it in $GUESSES_NUMBER tries. The secret number was $SECRET_NUMBER. Nice job!"
+    ((GUESSES_NUMBER+=1))
     BEST_GAME=$($PSQL "select best_game from users where username = '$USERNAME'")
-    if [[ $BEST_GAME == 0 ]] || [[ $GUESSES_NUMBER < $BEST_GAME ]]
+    echo "$BEST_GAME = best game, guesses number: $GUESSES_NUMBER"
+    if [[ $GUESSES_NUMBER -lt $BEST_GAME ]]
     then
       UPDATE_USER_DATA=$($PSQL "UPDATE USERS SET best_game = $GUESSES_NUMBER where username = '$USERNAME'")
     fi
     GAMES_PLAYED_BEFORE=$($PSQL "SELECT games_played from users where username = '$USERNAME'")
     UPDATE_USER_GAMES=$($PSQL "UPDATE USERS SET games_played = (( $GAMES_PLAYED_BEFORE + 1 )) where username = '$USERNAME'")
+    echo "You guessed it in $GUESSES_NUMBER tries. The secret number was $SECRET_NUMBER. Nice job!"
   fi
 }
 
