@@ -24,7 +24,6 @@ echo "Guess the secret number between 1 and 1000:"
 read GUESS
 
 GUESS_SECRET_NUMBER () {
-  echo $SECRET_NUMBER
   if [[ ! $1 =~ ^[0-9]+$ ]]
     then 
     echo "That is not an integer, guess again:"
@@ -46,7 +45,6 @@ GUESS_SECRET_NUMBER () {
   else
     ((GUESSES_NUMBER+=1))
     BEST_GAME=$($PSQL "select best_game from users where username = '$USERNAME'")
-    echo "$BEST_GAME = best game, guesses number: $GUESSES_NUMBER"
     if [[ $GUESSES_NUMBER -lt $BEST_GAME ]]
     then
       UPDATE_USER_DATA=$($PSQL "UPDATE USERS SET best_game = $GUESSES_NUMBER where username = '$USERNAME'")
